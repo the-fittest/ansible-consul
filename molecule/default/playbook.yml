@@ -1,0 +1,47 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    consul_config:
+      bind_addr: "{{ ansible_eth0.ipv4.address }}"
+      bootstrap: true
+      data_dir: /var/lib/consul
+      datacenter: fra1
+      domain: consul.
+      enable_script_checks: true
+      enable_syslog: true
+      encrypt: "iqvC6l1zNi5Iklv9/ywJfA=="
+      log_level: info
+      node_name: "{{ ansible_hostname }}"
+      rejoin_after_leave: true
+      server: true
+
+    consul_checks:
+      - name: 'google.de'
+        http: 'https://www.google.de'
+        interval: 30s
+      - name: 'heise.de'
+        http: 'https://www.heise.de'
+        interval: 20s
+
+    consul_services:
+      - name: google-de
+        tags:
+          - master
+        address: 'www.google.de'
+        port: 443
+      - name: heise-de
+        tags:
+          - master
+        address: 'www.heise.de'
+        port: 443
+
+  pre_tasks:
+
+    - name: Generic OS package manager
+      package:
+        name: rsyslog
+        state: present
+
+  roles:
+    - consul

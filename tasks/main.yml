@@ -1,0 +1,141 @@
+---
+# tasks file for consul
+
+- name: Create consul group
+  group:
+    name: consul
+    system: yes
+    state: present
+  tags:
+    - setup
+    - consul
+
+- name: Create consul user
+  user:
+    name: consul
+    group: consul
+    system: yes
+    state: present
+  tags:
+    - setup
+    - consul
+
+- name: Install requirements
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ consul_packages }}"
+    - "{{ consul_additional_packages }}"
+  tags:
+    - package
+    - consul
+
+- name: Install pip requirements
+  pip:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ consul_python_packages }}"
+    - "{{ consul_python_additional_packages }}"
+  tags:
+    - package
+    - consul
+
+- name: Create config directory
+  file:
+    path: "/etc/consul"
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  tags:
+    - setup
+    - consul
+
+- name: Create Data directory
+  file:
+    path: "{{ consul_data_path }}"
+    owner: consul
+    group: consul
+    mode: 0755
+    state: directory
+  tags:
+    - setup
+    - consul
+
+- name: Download and install consul
+  unarchive:
+    src: "{{ consul_binary_url }}"
+    dest: "{{ consul_bin_path }}"
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: yes
+    creates: "{{ consul_bin_path }}/consul"
+  tags:
+    - setup
+    - consul
+
+- name: Download and install consul-template
+  unarchive:
+    src: "{{ consul_template_binary_url }}"
+    dest: "{{ consul_bin_path }}"
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: yes
+    creates: "{{ consul_bin_path }}/consul-template"
+  tags:
+    - setup
+    - consul
+
+- name: Download and install envconsul
+  unarchive:
+    src: "{{ consul_env_binary_url }}"
+    dest: "{{ consul_bin_path }}"
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: yes
+    creates: "{{ consul_bin_path }}/envconsul"
+  tags:
+    - setup
+    - consul
+
+- name: Create Consul configuration files
+  template:
+    src: "{{ item }}.json.j2"
+    dest: "/etc/consul/{{ item }}.json"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - checks
+    - watches
+    - services
+    - config
+  notify: reload consul
+  tags:
+    - config
+    - consul
+
+- name: Setup systemd file
+  template:
+    src: systemd.j2
+    dest: /lib/systemd/system/consul.service
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - setup
+    - consul
+
+- name: Enable service
+  service:
+    name: consul
+    enabled: yes
+    state: started
+  tags:
+    - service
+    - consul

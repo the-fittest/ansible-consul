@@ -1,0 +1,22 @@
+---
+# handlers file for consul
+
+- name: start consul
+  service:
+    name: consul
+    state: started
+
+- name: stop consul
+  service:
+    name: consul
+    state: stopped
+
+- name: restart consul
+  service:
+    name: consul
+    state: restarted
+
+- name: reload consul
+  service:
+    name: consul
+    state: reloaded

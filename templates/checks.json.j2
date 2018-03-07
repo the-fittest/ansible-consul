@@ -1,0 +1,7 @@
+{
+{% if consul_checks is defined %}
+{% for check in consul_checks %}
+"check": {{ check | to_nice_json }}{% if not loop.last %},{% endif%}
+{% endfor %}
+{% endif %}
+}
