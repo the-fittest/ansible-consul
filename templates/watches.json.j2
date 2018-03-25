@@ -1,7 +1,0 @@
-{
-{% if consul_watches is defined %}
-{% for watch in consul_watches %}
-{{ watch | to_nice_json }}{% if not loop.last %},{% endif%}
-{% endfor %}
-{% endif %}
-}

@@ -1,7 +1,7 @@
-# Molecule managed
-
 ---
 port:
+  tcp:1053:
+    listening: true
   tcp:8300:
     listening: true
   tcp:8301:
@@ -10,13 +10,11 @@ port:
     listening: true
   tcp:8500:
     listening: true
-  tcp:8600:
+  udp:1053:
     listening: true
   udp:8301:
     listening: true
   udp:8302:
-    listening: true
-  udp:8600:
     listening: true
 service:
   consul:

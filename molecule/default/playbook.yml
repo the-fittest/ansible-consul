@@ -2,39 +2,50 @@
 - name: Converge
   hosts: all
   vars:
+    consul_master_token: 398073a8-5091-4d9c-871a-bbbeb030d1f6
+    consul_instance_token: 9b7093cb-72d3-67d0-edff-080f49e26710
+
     consul_config:
+      acl_datacenter: dc1
+      acl_default_policy: allow
+      acl_down_policy: extend-cache
+      acl_master_token: "{{ consul_master_token }}"
+      acl_agent_token: "{{ consul_instance_token }}"
       bind_addr: "{{ ansible_eth0.ipv4.address }}"
       bootstrap: true
+      datacenter: dc1
       data_dir: /var/lib/consul
-      datacenter: fra1
-      domain: consul.
+      disable_update_check: true
+      domain: lan.
+      encrypt: "iqvC6l1zNi5Iklv9/ywJfA=="
       enable_script_checks: true
       enable_syslog: true
-      encrypt: "iqvC6l1zNi5Iklv9/ywJfA=="
-      log_level: info
+      log_level: debug
       node_name: "{{ ansible_hostname }}"
       rejoin_after_leave: true
       server: true
-
-    consul_checks:
-      - name: 'google.de'
-        http: 'https://www.google.de'
-        interval: 30s
-      - name: 'heise.de'
-        http: 'https://www.heise.de'
-        interval: 20s
-
-    consul_services:
-      - name: google-de
-        tags:
-          - master
-        address: 'www.google.de'
-        port: 443
-      - name: heise-de
-        tags:
-          - master
-        address: 'www.heise.de'
-        port: 443
+      ui: true
+      ports:
+        dns: 1053
+      recursors:
+        - 8.8.8.8
+        - 8.8.4.4
+      checks:
+        - name: heise-de
+          http: https://www.heise.de
+          interval: 60s
+      services:
+        - name: heise-de
+          tags:
+            - master
+          address: www.heise.de
+          port: 443
+      watches:
+        - name: web-deploy
+          type: event
+          handler_type: script
+          args:
+            - "/bin/date"
 
   pre_tasks:
 
@@ -43,5 +54,31 @@
         name: rsyslog
         state: present
 
+    - name: Enable service
+      service:
+        name: rsyslog
+        enabled: yes
+        state: started
+
   roles:
     - consul
+
+  post_tasks:
+
+    - pause:
+        seconds: 10
+
+    - name: Create consul server acls
+      consul_acl:
+        mgmt_token: "{{ consul_master_token }}"
+        token: "{{ consul_instance_token }}"
+        name: consul server
+        rules:
+          - node: "{{ ansible_hostname }}"
+            policy: write
+          - agent: "{{ ansible_hostname }}"
+            policy: write
+          - service: ""
+            policy: read
+          - event: ""
+            policy: read

@@ -44,7 +44,7 @@
 
 - name: Create config directory
   file:
-    path: "/etc/consul"
+    path: /etc/consul
     owner: root
     group: root
     mode: 0755
@@ -55,7 +55,7 @@
 
 - name: Create Data directory
   file:
-    path: "{{ consul_data_path }}"
+    path: /var/lib/consul
     owner: consul
     group: consul
     mode: 0755
@@ -67,54 +67,23 @@
 - name: Download and install consul
   unarchive:
     src: "{{ consul_binary_url }}"
-    dest: "{{ consul_bin_path }}"
+    dest: "/usr/local/bin"
     owner: root
     group: root
     mode: 0755
     remote_src: yes
-    creates: "{{ consul_bin_path }}/consul"
+    creates: "/usr/local/bin/consul"
   tags:
     - setup
     - consul
 
-- name: Download and install consul-template
-  unarchive:
-    src: "{{ consul_template_binary_url }}"
-    dest: "{{ consul_bin_path }}"
-    owner: root
-    group: root
-    mode: 0755
-    remote_src: yes
-    creates: "{{ consul_bin_path }}/consul-template"
-  tags:
-    - setup
-    - consul
-
-- name: Download and install envconsul
-  unarchive:
-    src: "{{ consul_env_binary_url }}"
-    dest: "{{ consul_bin_path }}"
-    owner: root
-    group: root
-    mode: 0755
-    remote_src: yes
-    creates: "{{ consul_bin_path }}/envconsul"
-  tags:
-    - setup
-    - consul
-
-- name: Create Consul configuration files
-  template:
-    src: "{{ item }}.json.j2"
-    dest: "/etc/consul/{{ item }}.json"
-    owner: root
-    group: root
-    mode: 0644
-  with_items:
-    - checks
-    - watches
-    - services
-    - config
+- name: Create Consul configuration
+  copy:
+    content: "{{ consul_config | mandatory | to_nice_json }}"
+    dest: "/etc/consul/config.json"
+    owner: consul
+    group: consul
+    mode: 0640
   notify: reload consul
   tags:
     - config

@@ -2,12 +2,11 @@
 # defaults file for consul
 
 consul_binary_url: https://releases.hashicorp.com/consul/1.0.6/consul_1.0.6_linux_amd64.zip
-consul_template_binary_url: https://releases.hashicorp.com/consul-template/0.19.4/consul-template_0.19.4_linux_amd64.zip
-consul_env_binary_url: https://releases.hashicorp.com/envconsul/0.7.3/envconsul_0.7.3_linux_amd64.zip
 
 consul_python_packages:
   - python-consul
   - requests
+  - pyhcl
 
 consul_python_additional_packages: []
 
@@ -17,7 +16,3 @@ consul_packages:
   - python-pip
 
 consul_additional_packages: []
-
-consul_base_path: /etc/consul
-consul_bin_path: /usr/local/bin
-consul_data_path: /var/lib/consul
