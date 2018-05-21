@@ -65,7 +65,8 @@
 
   post_tasks:
 
-    - pause:
+    - name: wait for it
+      pause:
         seconds: 10
 
     - name: Create consul server acls
